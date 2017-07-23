@@ -288,6 +288,23 @@ class GitCommitBearTest(unittest.TestCase):
                              body_regex=r'TICKER\s*CLOSE\s+[1-9][0-9]*'), [])
         self.assert_no_msgs()
 
+        # Testing if check recognises invalid emails
+        self.git_commit('Shortlog\n\n'
+                        'A valid email rhemon19@gmail.com\n'
+                        'An Invalid email invalidemail@invalid.invalid\n'
+                        'Anohter invalid email random@somerandomdomain.com\n'
+                        'Fix 2017')
+        message = 'Body contains these invalid emails:\n'
+        message += ' invalidemail@invalid.invalid\n'
+        message += ' random@somerandomdomain.com\n'
+        self.assertEqual(self.run_uut(), [message])
+
+        self.git_commit('Shortlog\n\n'
+                        'Some text'
+                        'Close 2017')
+        self.assertEqual(self.run_uut(valid_email=False),
+                         [])
+
     def test_check_issue_reference(self):
         # Commit with no remotes configured
         self.git_commit('Shortlog\n\n'

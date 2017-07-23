@@ -3,6 +3,7 @@ import re
 import shutil
 import os
 from urllib.parse import urlparse
+from validate_email import validate_email
 
 from coalib.bears.GlobalBear import GlobalBear
 from dependency_management.requirements.PipRequirement import PipRequirement
@@ -15,7 +16,9 @@ from coalib.settings.Setting import typed_list
 
 class GitCommitBear(GlobalBear):
     LANGUAGES = {'Git'}
-    REQUIREMENTS = {PipRequirement('nltk', '3.2')}
+    REQUIREMENTS = {PipRequirement('nltk', '3.2'),
+                    PipRequirement('py3dns', '3.1.1a'),
+                    PipRequirement('validate_email', '1.3')}
     AUTHORS = {'The coala developers'}
     AUTHORS_EMAILS = {'coala-devel@googlegroups.com'}
     LICENSE = 'AGPL-3.0'
@@ -223,7 +226,8 @@ class GitCommitBear(GlobalBear):
                    body_line_length: int=72,
                    force_body: bool=False,
                    ignore_length_regex: typed_list(str)=(),
-                   body_regex: str=None):
+                   body_regex: str=None,
+                   valid_email: bool=True):
         """
         Checks the given commit body.
 
@@ -236,6 +240,8 @@ class GitCommitBear(GlobalBear):
                                     expressions in this list will be ignored.
         :param body_regex:          If provided, checks the presence of regex
                                     in the commit body.
+        :param valid_email:         Checks validity of emails in commit body if
+                                    present.
         """
         if len(body) == 0:
             if force_body:
@@ -259,6 +265,17 @@ class GitCommitBear(GlobalBear):
             yield Result(self, 'Body of HEAD commit contains too long lines. '
                                'Commit body lines should not exceed {} '
                                'characters.'.format(body_line_length))
+
+        if valid_email:
+            result_message = 'Body contains these invalid emails:\n'
+            invalid_emails = False
+            for line in body:
+                for email in re.findall(r'\w+@+\w+\.+\w*', line):
+                    if not validate_email(email, verify=True):
+                        invalid_emails = True
+                        result_message += ' ' + email + '\n'
+            if invalid_emails:
+                yield Result(self, result_message)
 
     def check_issue_reference(self, body,
                               body_close_issue: bool=False,
