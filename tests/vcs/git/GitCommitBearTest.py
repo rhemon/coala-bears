@@ -292,11 +292,11 @@ class GitCommitBearTest(unittest.TestCase):
         self.git_commit('Shortlog\n\n'
                         'A valid email rhemon19@gmail.com\n'
                         'An invalid email invalidemail@invalid.invalid\n'
-                        'Anohter invalid email random@blablablbdafklaskdlablabla.com\n'
+                        'Anohter invalid email random@jhadhsfjahjkasd.com\n'
                         'Fix 2017')
         message = 'Body contains these invalid emails:\n'
         message += ' invalidemail@invalid.invalid\n'
-        message += ' random@blablablbdafklaskdlablabla.com\n'
+        message += ' random@jhadhsfjahjkasd.com\n'
         self.assertEqual(self.run_uut(), [message])
 
         self.git_commit('Shortlog\n\n'

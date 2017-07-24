@@ -239,7 +239,7 @@ class GitCommitBear(GlobalBear):
                                     expressions in this list will be ignored.
         :param body_regex:          If provided, checks the presence of regex
                                     in the commit body.
-        :param verify_email:         Checks validity of emails in commit body if
+        :param verify_email:        Checks validity of emails in commit body if
                                     present.
         """
         if len(body) == 0:
@@ -270,7 +270,8 @@ class GitCommitBear(GlobalBear):
             invalid_emails = False
             for line in body:
                 for email in re.findall(r'\w+@+\w+\.+\w*', line):
-                    if is_email(email, diagnose=True, check_dns=True).ERROR_CODES:
+                    if is_email(email, diagnose=True,
+                                check_dns=True).ERROR_CODES:
                         invalid_emails = True
                         result_message += ' ' + email + '\n'
             if invalid_emails:
