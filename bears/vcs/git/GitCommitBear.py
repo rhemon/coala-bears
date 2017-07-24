@@ -271,7 +271,7 @@ class GitCommitBear(GlobalBear):
             invalid_emails = False
             for line in body:
                 for email in re.findall(r'\w+@+\w+\.+\w*', line):
-                    if not validate_email(email, verify=True):
+                    if not validate_email(email, verify=True, debug=True):
                         invalid_emails = True
                         result_message += ' ' + email + '\n'
             if invalid_emails:
