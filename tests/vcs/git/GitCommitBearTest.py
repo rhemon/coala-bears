@@ -290,19 +290,21 @@ class GitCommitBearTest(unittest.TestCase):
 
         # Testing if check recognises invalid emails
         self.git_commit('Shortlog\n\n'
-                        'A valid email rhemon19@gmail.com\n'
-                        'An invalid email invalidemail@invalid.invalid\n'
-                        'Anohter invalid email random@jhadhsfjahjkasd.com\n'
+                        'invalid#!format!*!@email.com\n'
+                        'another.*invalid@format\n'
+                        'validformat@email.check\n'
+                        'validdomain@gmail.com\n'
                         'Fix 2017')
         message = 'Body contains these invalid emails:\n'
-        message += ' invalidemail@invalid.invalid\n'
-        message += ' random@jhadhsfjahjkasd.com\n'
+        message += ' invalid#!format!*!@email.com\n'
+        message += ' another.*invalid@format\n'
+        # Test with email_dns_check set to False
         self.assertEqual(self.run_uut(), [message])
-
-        self.git_commit('Shortlog\n\n'
-                        'Some text'
-                        'Close 2017')
-        self.assertEqual(self.run_uut(verify_email=False), [])
+        # Test with email_dns_check set to True
+        message += " validformat@email.check\n"
+        self.assertEqual(self.run_uut(email_dns_check=True), [message])
+        # Test with valid_email_check set to False
+        self.assertEqual(self.run_uut(valid_email_check=False), [])
 
     def test_check_issue_reference(self):
         # Commit with no remotes configured

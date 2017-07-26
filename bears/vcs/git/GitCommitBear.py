@@ -226,7 +226,8 @@ class GitCommitBear(GlobalBear):
                    force_body: bool=False,
                    ignore_length_regex: typed_list(str)=(),
                    body_regex: str=None,
-                   verify_email: bool=True):
+                   valid_email_check: bool=True,
+                   email_dns_check: bool=False):
         """
         Checks the given commit body.
 
@@ -239,8 +240,10 @@ class GitCommitBear(GlobalBear):
                                     expressions in this list will be ignored.
         :param body_regex:          If provided, checks the presence of regex
                                     in the commit body.
-        :param verify_email:        Checks validity of emails in commit body if
-                                    present.
+        :param valid_email_check:   If True, it checks if emails are in valid
+                                    format or not
+        :param email_dns_check:     If True, it checks if domains in the emails
+                                    are valid or not
         """
         if len(body) == 0:
             if force_body:
@@ -265,13 +268,20 @@ class GitCommitBear(GlobalBear):
                                'Commit body lines should not exceed {} '
                                'characters.'.format(body_line_length))
 
-        if verify_email:
+        if valid_email_check:
             result_message = 'Body contains these invalid emails:\n'
             invalid_emails = False
             for line in body:
-                for email in re.findall(r'\w+@+\w+\.+\w*', line):
-                    if is_email(email, diagnose=True,
-                                check_dns=True).ERROR_CODES:
+                for email in re.findall(r'\S*@\S*', line):
+                    email_check = re.match(r"(^[a-zA-Z0-9_.+-]"
+                                           +r"+@[a-zA-Z0-9-]+\."
+                                           +r"[a-zA-Z0-9-.]+$)", email)
+                    # if eamil do not match regex there is no need to
+                    # look up dns
+                    if email_dns_check and email_check:
+                        email_check = not is_email(email, diagnose=True,
+                                               check_dns=True).ERROR_CODES
+                    if not email_check:
                         invalid_emails = True
                         result_message += ' ' + email + '\n'
             if invalid_emails:
